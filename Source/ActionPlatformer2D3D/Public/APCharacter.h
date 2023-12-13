@@ -12,6 +12,7 @@ class  AAPCharacter : public APaperZDCharacter
 {
 	GENERATED_BODY()
 
+public:
 	AAPCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	// What will be in here:

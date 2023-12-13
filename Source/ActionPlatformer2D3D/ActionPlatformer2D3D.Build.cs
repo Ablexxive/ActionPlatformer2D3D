@@ -8,7 +8,7 @@ public class ActionPlatformer2D3D : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "PaperZD" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Paper2D", "PaperZD" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
@@ -20,6 +20,6 @@ public class ActionPlatformer2D3D : ModuleRules
 
 		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 		
-		PublicIncludePaths.AddRange(new string[] {"Engine/Plugins/Marketplace/PaperZD/Source/PaperZD/"});
+		PublicIncludePaths.AddRange(new string[] {"../Engine/Plugins/Marketplace/PaperZD/Source/PaperZD/"});
 	}
 }

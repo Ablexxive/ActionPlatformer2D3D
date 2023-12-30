@@ -34,7 +34,16 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UAPInputConfig* InputConfig;
 
+	TWeakObjectPtr<APlayerController> MyPlayerControllerPtr; 
+
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	/* Input Config functions. */
+	void IC_Move(const FInputActionValue& Value);
+//	void IC_KeyboardMove_X(const FInputActionValue& Value);
+//	void IC_KeyboardMove_Y(const FInputActionValue& Value);
+	void IC_Jump(const FInputActionValue& Value);
+	void IC_Attack(const FInputActionValue& Value);
 #pragma endregion 
 
 	

@@ -1,13 +1,10 @@
 #include "Player/APPlayerCharacter.h"
 
-//#include "Engine/LocalPlayer.h"
-
 #include "Components/InputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-#include "GameFramework/PawnMovementComponent.h"
 
 AAPPlayerCharacter::AAPPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -15,6 +12,8 @@ AAPPlayerCharacter::AAPPlayerCharacter(const FObjectInitializer& ObjectInitializ
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->bDoCollisionTest = false;
+	// Sets absolute rotation to TRUE so that the player controller can rotate but the camera stays facing forward.
+	SpringArm->SetAbsolute(false, true, false);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -60,29 +59,27 @@ void AAPPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	
 	if (InputConfig->InputMove != nullptr)
 	{
-		EnhancedInputComponent->BindAction(InputConfig->InputMove, ETriggerEvent::Triggered, this, &AAPPlayerCharacter::IC_Move);
+		EnhancedInputComponent->BindAction(InputConfig->InputMove, ETriggerEvent::Triggered, this, &AAPPlayerCharacter::IC_Move_Triggered);
 	}
-	/*
-	if (InputConfig->KeyboardInputMove_X != nullptr)
-	{
-		EnhancedInputComponent->BindAction(InputConfig->KeyboardInputMove_X, ETriggerEvent::Triggered, this, &AAPPlayerCharacter::IC_KeyboardMove_X);
-	}
-	if (InputConfig->KeyboardInputMove_Y != nullptr)
-	{
-		EnhancedInputComponent->BindAction(InputConfig->KeyboardInputMove_Y, ETriggerEvent::Triggered, this, &AAPPlayerCharacter::IC_KeyboardMove_Y);
-	}
-	*/
+	
 	if (InputConfig->InputJump != nullptr)
 	{
-		EnhancedInputComponent->BindAction(InputConfig->InputJump, ETriggerEvent::Triggered, this, &AAPPlayerCharacter::IC_Jump);
+		EnhancedInputComponent->BindAction(InputConfig->InputJump, ETriggerEvent::Started, this, &AAPPlayerCharacter::IC_Jump_Started);
+		EnhancedInputComponent->BindAction(InputConfig->InputJump, ETriggerEvent::Canceled, this, &AAPPlayerCharacter::IC_Jump_Canceled);
 	}
+	
 	if (InputConfig->InputAttack != nullptr)
 	{
-		EnhancedInputComponent->BindAction(InputConfig->InputAttack, ETriggerEvent::Triggered, this, &AAPPlayerCharacter::IC_Attack);
+		EnhancedInputComponent->BindAction(InputConfig->InputAttack, ETriggerEvent::Triggered, this, &AAPPlayerCharacter::IC_Attack_Triggered);
+	}
+	
+	if (InputConfig->InputThrow != nullptr)
+	{
+		EnhancedInputComponent->BindAction(InputConfig->InputThrow, ETriggerEvent::Triggered, this, &AAPPlayerCharacter::IC_Throw_Triggered);
 	}
 }
 
-void AAPPlayerCharacter::IC_Move(const FInputActionValue& Value)
+void AAPPlayerCharacter::IC_Move_Triggered(const FInputActionValue& Value)
 {
 	if (!IsValid(MyPlayerControllerPtr.Get()))
 	{
@@ -93,53 +90,51 @@ void AAPPlayerCharacter::IC_Move(const FInputActionValue& Value)
 
 	const FRotator MovementRotation(0, MyPlayerControllerPtr->GetControlRotation().Yaw, 0);
 
-	// Forward/Back direction
+	// /Up/Down direction
 	if (MoveValue.Y != 0.0f)
 	{
-		const	FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
+		const	FVector Direction = MovementRotation.RotateVector(GetActorRightVector() * -1.0);
 		AddMovementInput(Direction, MoveValue.Y);
 	}
 
-	// Left/Right direction?
+	// Left/Right direction
 	if (MoveValue.X != 0.0f)
 	{
-		const	FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
+		//const	FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
+		//AddMovementInput(Direction, MoveValue.X);
+		
+		const	FVector Direction = MovementRotation.RotateVector(GetActorForwardVector());
 		AddMovementInput(Direction, MoveValue.X);
+
+		if (MoveValue.X > 0.0f)
+		{
+			const FRotator NewRotation = FRotator(0.0, 0.0, 0.0);
+			MyPlayerControllerPtr->SetControlRotation(NewRotation);
+		}
+		else if (MoveValue.X < 0.0f)
+		{
+			const FRotator NewRotation = FRotator(0.0, 180.0, 0.0);
+			MyPlayerControllerPtr->SetControlRotation(NewRotation);
+		}
 	}
 }
 
-/*
-void AAPPlayerCharacter::IC_KeyboardMove_X(const FInputActionValue& Value)
-{
-	if (!IsValid(MyPlayerControllerPtr.Get()))
-	{
-		// TODO: Logging
-		return;
-	}
-	const float MoveValue = Value.Get<float>();
-
-	const FRotator MovementRotation(0, MyPlayerControllerPtr->GetControlRotation().Yaw, 0);
-
-	// Forward/Back direction
-	if (MoveValue != 0.0f)
-	{
-		const	FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
-		AddMovementInput(Direction, MoveValue);
-	}
-}
-
-void AAPPlayerCharacter::IC_KeyboardMove_Y(const FInputActionValue& Value)
-{
-	//TODO abstract to FowardVector vs RightVector
-};
-*/
-void AAPPlayerCharacter::IC_Jump(const FInputActionValue& Value)
+void AAPPlayerCharacter::IC_Jump_Started(const FInputActionValue& Value)
 {
 	Jump();
+};
+
+void AAPPlayerCharacter::IC_Jump_Canceled(const FInputActionValue& Value)
+{
+	StopJumping();
+};
+
+void AAPPlayerCharacter::IC_Attack_Triggered(const FInputActionValue& Value)
+{
 	//TODO Implement
 };
 
-void AAPPlayerCharacter::IC_Attack(const FInputActionValue& Value)
+void AAPPlayerCharacter::IC_Throw_Triggered(const FInputActionValue& Value)
 {
 	//TODO Implement
 };

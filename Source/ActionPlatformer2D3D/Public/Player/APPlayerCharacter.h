@@ -39,11 +39,11 @@ private:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	/* Input Config functions. */
-	void IC_Move(const FInputActionValue& Value);
-//	void IC_KeyboardMove_X(const FInputActionValue& Value);
-//	void IC_KeyboardMove_Y(const FInputActionValue& Value);
-	void IC_Jump(const FInputActionValue& Value);
-	void IC_Attack(const FInputActionValue& Value);
+	void IC_Move_Triggered(const FInputActionValue& Value);
+	void IC_Jump_Started(const FInputActionValue& Value);
+	void IC_Jump_Canceled(const FInputActionValue& Value);
+	void IC_Attack_Triggered(const FInputActionValue& Value);
+	void IC_Throw_Triggered(const FInputActionValue& Value);
 #pragma endregion 
 
 	

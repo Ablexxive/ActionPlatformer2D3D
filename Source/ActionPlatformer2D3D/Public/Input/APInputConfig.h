@@ -12,13 +12,6 @@ class UAPInputConfig : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	/*
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UInputAction* KeyboardInputMove_X;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UInputAction* KeyboardInputMove_Y;
-*/	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* InputMove;
 	
@@ -27,4 +20,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* InputAttack;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UInputAction* InputThrow;
 };

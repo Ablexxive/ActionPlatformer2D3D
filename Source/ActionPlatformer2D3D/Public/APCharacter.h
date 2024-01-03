@@ -15,6 +15,9 @@ class  AAPCharacter : public APaperZDCharacter
 public:
 	AAPCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsAttacking = false;
+
 	// What will be in here:
 	// - Hitbox system??
 	// - Stun System

@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 AAPPlayerCharacter::AAPPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -17,6 +18,18 @@ AAPPlayerCharacter::AAPPlayerCharacter(const FObjectInitializer& ObjectInitializ
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+}
+
+void AAPPlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	AttackAnimationOverideDelegate.BindUObject(this, &AAPPlayerCharacter::AttackAnimationComplete);
+}
+
+void AAPPlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	AttackAnimationOverideDelegate.Unbind();
 }
 
 void AAPPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -100,21 +113,26 @@ void AAPPlayerCharacter::IC_Move_Triggered(const FInputActionValue& Value)
 	// Left/Right direction
 	if (MoveValue.X != 0.0f)
 	{
-		//const	FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
-		//AddMovementInput(Direction, MoveValue.X);
-		
 		const	FVector Direction = MovementRotation.RotateVector(GetActorForwardVector());
 		AddMovementInput(Direction, MoveValue.X);
 
-		if (MoveValue.X > 0.0f)
+		// Update control rotation so that sprite properly faces movement direction.
+		const UPawnMovementComponent* MyMovementComponent = GetMovementComponent();
+		if (IsValid(MyMovementComponent))
 		{
-			const FRotator NewRotation = FRotator(0.0, 0.0, 0.0);
-			MyPlayerControllerPtr->SetControlRotation(NewRotation);
-		}
-		else if (MoveValue.X < 0.0f)
-		{
-			const FRotator NewRotation = FRotator(0.0, 180.0, 0.0);
-			MyPlayerControllerPtr->SetControlRotation(NewRotation);
+			if (MyMovementComponent->IsMovingOnGround())
+			{
+				if (MoveValue.X > 0.0f)
+				{
+					const FRotator NewRotation(0.0, 0.0, 0.0);
+					MyPlayerControllerPtr->SetControlRotation(NewRotation);
+				}
+				else if (MoveValue.X < 0.0f)
+				{
+					const FRotator NewRotation(0.0, 180.0, 0.0);
+					MyPlayerControllerPtr->SetControlRotation(NewRotation);
+				}
+			}
 		}
 	}
 }
@@ -131,8 +149,29 @@ void AAPPlayerCharacter::IC_Jump_Canceled(const FInputActionValue& Value)
 
 void AAPPlayerCharacter::IC_Attack_Triggered(const FInputActionValue& Value)
 {
+	if (IsAttacking)
+	{
+		return;
+	}
+	
+	IsAttacking = true;
+
+	// TODO Maybe move all this to a combat component
+	if (UPaperZDAnimInstance* MyAnimInstance = GetAnimInstance())
+	{
+		MyAnimInstance->PlayAnimationOverride(AttackAnimSequence, AttackAnimSequenceSlot, 1, 0, AttackAnimationOverideDelegate);
+	}
+	
+	
 	//TODO Implement
 };
+
+void AAPPlayerCharacter::AttackAnimationComplete(bool Success)
+{
+	// If (success) -> Completed, else Canceled.
+	IsAttacking = false;
+}
+
 
 void AAPPlayerCharacter::IC_Throw_Triggered(const FInputActionValue& Value)
 {

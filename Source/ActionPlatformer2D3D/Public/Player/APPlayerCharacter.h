@@ -4,6 +4,7 @@
 
 #include "APCharacter.h"
 #include "Input/APInputConfig.h"
+#include "PaperZDAnimInstance.h"
 #include "APPlayerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -18,11 +19,25 @@ class AAPPlayerCharacter : public AAPCharacter
 public:
 	AAPPlayerCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<USpringArmComponent> SpringArm;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> Camera;
+
+	// TODO Move attack things to an attack component? Can move IsAttacking there too.
+	FZDOnAnimationOverrideEndSignature AttackAnimationOverideDelegate;
+	void AttackAnimationComplete(bool Success);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attacks")
+	UPaperZDAnimSequence* AttackAnimSequence;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attacks")
+	FName AttackAnimSequenceSlot;
+	
 
 #pragma region // input
 private:

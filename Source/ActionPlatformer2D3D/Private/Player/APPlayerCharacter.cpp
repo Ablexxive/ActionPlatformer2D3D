@@ -163,7 +163,8 @@ void AAPPlayerCharacter::IC_Attack_Triggered(const FInputActionValue& Value)
 	}
 	
 	
-	//TODO Implement
+	//TODO So the right-er way to do this would be to have a combat component that handles all this, but we are going
+	// to jank it up in the name of learning things. Next project :)
 };
 
 void AAPPlayerCharacter::AttackAnimationComplete(bool Success)

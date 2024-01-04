@@ -23,13 +23,14 @@ AAPPlayerCharacter::AAPPlayerCharacter(const FObjectInitializer& ObjectInitializ
 void AAPPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	AttackAnimationOverideDelegate.BindUObject(this, &AAPPlayerCharacter::AttackAnimationComplete);
+//	AttackAnimationOverideDelegate.BindUObject(this, &AAPPlayerCharacter::AttackAnimationComplete);
 }
 
+// TODO Remove Begin & End
 void AAPPlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	AttackAnimationOverideDelegate.Unbind();
+//	AttackAnimationOverideDelegate.Unbind();
 }
 
 void AAPPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -149,29 +150,46 @@ void AAPPlayerCharacter::IC_Jump_Canceled(const FInputActionValue& Value)
 
 void AAPPlayerCharacter::IC_Attack_Triggered(const FInputActionValue& Value)
 {
-	if (IsAttacking)
+	//if (IsAttacking)
+	UAPCombatComponent* MyCombatComponent = CombatComponent.Get();
+	if (MyCombatComponent == nullptr)
 	{
+		// TODO Log error
 		return;
 	}
 	
-	IsAttacking = true;
+	if (MyCombatComponent->IsAttacking)
+	{
+		return;
+	}
 
-	// TODO Maybe move all this to a combat component
+	if (UPaperZDAnimInstance* MyAnimInstance = GetAnimInstance())
+	{
+		MyCombatComponent->DoAttack(MyAnimInstance);
+	}
+	
+
+	/*
+	IsAttacking = true;
+	
+	// TODO Maybe move all this to a combat component -> Pass in UPaperZDAnimInstance
 	if (UPaperZDAnimInstance* MyAnimInstance = GetAnimInstance())
 	{
 		MyAnimInstance->PlayAnimationOverride(AttackAnimSequence, AttackAnimSequenceSlot, 1, 0, AttackAnimationOverideDelegate);
 	}
-	
+*/	
 	
 	//TODO So the right-er way to do this would be to have a combat component that handles all this, but we are going
 	// to jank it up in the name of learning things. Next project :)
+	// JK NOW THIS PROJECT
 };
-
+/*
 void AAPPlayerCharacter::AttackAnimationComplete(bool Success)
 {
 	// If (success) -> Completed, else Canceled.
-	IsAttacking = false;
+	//IsAttacking = false;
 }
+*/
 
 
 void AAPPlayerCharacter::IC_Throw_Triggered(const FInputActionValue& Value)

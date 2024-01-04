@@ -3,7 +3,5 @@
 AAPCharacter::AAPCharacter(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
-	//UPaperFlipbookComponent* MySprite = GetSprite();
-	//MySprite
-	//MySprite.SourceFlipbook;
+	CombatComponent = CreateDefaultSubobject<UAPCombatComponent>(TEXT("Combat Component"));
 }

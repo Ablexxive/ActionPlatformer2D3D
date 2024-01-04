@@ -38,30 +38,44 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Combat|Attack")
 	uint8 AttackDamage = 30;
 	
-	UPROPERTY(EditAnywhere, Category = "Combat|Attack")
+	UPROPERTY(EditAnywhere, Category = "Combat|Animation")
 	FName AttackHitboxName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Animation")
 	UPaperZDAnimSequence* AttackAnimSequence;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Animation")
 	FName AttackAnimSequenceSlot;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat|Attack")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat|Character|Runtime")
 	bool IsAttacking = false;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat|Character|Runtime")
+	bool IsStunned = false;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat|Character|Runtime")
+	bool IsDead = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Animation")
+	FName ABPJumpName_HitReact;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Animation")
+	FName ABPJumpName_Dead;
 
-	// DEBUG REMOVE
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Character")
+	float StunDuration = 0.5;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat|Attack")
 	uint8 FoundAttackHitBox = 0;
 
 	UFUNCTION(BlueprintCallable, Category="Combat|Attack")
-	void DoAttack(UPaperZDAnimInstance* AnimInstance);
+	void DoAttack();
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Combat|Character")
-	uint8 MaxHealth = 100;
+	int32 MaxHealth = 100;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Combat|Character")
-	uint8 CurrentHealth = 100;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Combat|Character|Runtime")
+	int32 CurrentHealth = 100;
 
 	UPROPERTY(EditAnywhere, Category = "Combat|Character")
 	EFaction MyFaction = EFaction::Player;
@@ -75,6 +89,8 @@ public:
 private:
 	TWeakObjectPtr<UBoxComponent> AttackHitBoxPtr;
 	
+	TWeakObjectPtr<UPaperZDAnimInstance> AnimInstancePtr;
+	
 	FZDOnAnimationOverrideEndSignature AttackAnimationOverideDelegate;
 	void AttackAnimationComplete(bool Success);
 
@@ -86,4 +102,7 @@ private:
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void _StunTimerComplete();
 };

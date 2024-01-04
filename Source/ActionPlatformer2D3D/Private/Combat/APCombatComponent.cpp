@@ -3,15 +3,14 @@
 
 #include "Combat/APCombatComponent.h"
 
-#include "DiffUtils.h"
 #include "Combat/APCombatInterface.h"
 #include "Components/BoxComponent.h"
+#include "PaperZDCharacter.h"
 
 UAPCombatComponent::UAPCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
-
 
 // Called when the game starts
 void UAPCombatComponent::BeginPlay()
@@ -54,6 +53,12 @@ void UAPCombatComponent::BeginPlay()
 
 	// Bind attack animation complete
 	AttackAnimationOverideDelegate.BindUObject(this, &UAPCombatComponent::AttackAnimationComplete);
+
+	// Save weakptr to AnimInstance
+	if (const APaperZDCharacter* MyOwnerZD = Cast<APaperZDCharacter>(MyOwner))
+	{
+		AnimInstancePtr = MyOwnerZD->GetAnimInstance();	
+	}
 }
 
 void UAPCombatComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -81,24 +86,49 @@ void UAPCombatComponent::ToggleAttackHitbox(bool Enabled)
 
 void UAPCombatComponent::TakeDamage(uint8 InDamage)
 {
-	// TODO Check 0, broadcast playing dying, broadcast on hit for hitstun?
-	// New interface for changing animations?
 	CurrentHealth -= InDamage;
+	CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
+	UPaperZDAnimInstance* AnimInstance = AnimInstancePtr.Get();
+	if (AnimInstance == nullptr)
+	{
+		// TODO Logging
+		return;
+	}
+	
+	if (CurrentHealth <= 0)
+	{
+		// TODO Check 0, broadcast playing dying?
+		AnimInstance->JumpToNode(ABPJumpName_Dead);
+		IsDead = true;
+	}
+	else
+	{
+	   FTimerHandle StunTimerHandle; // TODO Maybe keep this ref in .h?
+	   GetWorld()->GetTimerManager().SetTimer(StunTimerHandle, this, &UAPCombatComponent::_StunTimerComplete, StunDuration, false);
+	
+		AnimInstance->JumpToNode(ABPJumpName_HitReact);
+		IsStunned = true;
+	}
+}
+
+void UAPCombatComponent::DoAttack()
+{
+	if (IsAttacking)
+	{
+		return;
+	}
+	
+	if (UPaperZDAnimInstance* AnimInstance = AnimInstancePtr.Get())
+	{
+		AnimInstance->PlayAnimationOverride(AttackAnimSequence, AttackAnimSequenceSlot, 1, 0, AttackAnimationOverideDelegate);
+		IsAttacking = true;
+	}
 }
 
 void UAPCombatComponent::AttackAnimationComplete(bool Success)
 {
 	// If (success) -> Completed, else Canceled.
 	IsAttacking = false;
-}
-
-void UAPCombatComponent::DoAttack(UPaperZDAnimInstance* AnimInstance)
-{
-	if (AnimInstance)
-	{
-		AnimInstance->PlayAnimationOverride(AttackAnimSequence, AttackAnimSequenceSlot, 1, 0, AttackAnimationOverideDelegate);
-		IsAttacking = true;
-	}
 }
 
 void UAPCombatComponent::BeginAttackHitboxOverlap(
@@ -119,18 +149,14 @@ void UAPCombatComponent::BeginAttackHitboxOverlap(
 			}
 		}
 	}
-	//if (OtherCombatInterface)
-		
-	// Here we:
-	// 1) Get Combat Component - make fcn on Interface
-	// 2) Check Faction
-	// 3) Apply Damage - make function in C++ -> TakeDamage
 }
 
-// Called every frame
+void UAPCombatComponent::_StunTimerComplete()
+{
+	IsStunned = false;
+}
+
 void UAPCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
 }

@@ -150,7 +150,6 @@ void AAPPlayerCharacter::IC_Jump_Canceled(const FInputActionValue& Value)
 
 void AAPPlayerCharacter::IC_Attack_Triggered(const FInputActionValue& Value)
 {
-	//if (IsAttacking)
 	UAPCombatComponent* MyCombatComponent = CombatComponent.Get();
 	if (MyCombatComponent == nullptr)
 	{
@@ -163,33 +162,8 @@ void AAPPlayerCharacter::IC_Attack_Triggered(const FInputActionValue& Value)
 		return;
 	}
 
-	if (UPaperZDAnimInstance* MyAnimInstance = GetAnimInstance())
-	{
-		MyCombatComponent->DoAttack(MyAnimInstance);
-	}
-	
-
-	/*
-	IsAttacking = true;
-	
-	// TODO Maybe move all this to a combat component -> Pass in UPaperZDAnimInstance
-	if (UPaperZDAnimInstance* MyAnimInstance = GetAnimInstance())
-	{
-		MyAnimInstance->PlayAnimationOverride(AttackAnimSequence, AttackAnimSequenceSlot, 1, 0, AttackAnimationOverideDelegate);
-	}
-*/	
-	
-	//TODO So the right-er way to do this would be to have a combat component that handles all this, but we are going
-	// to jank it up in the name of learning things. Next project :)
-	// JK NOW THIS PROJECT
-};
-/*
-void AAPPlayerCharacter::AttackAnimationComplete(bool Success)
-{
-	// If (success) -> Completed, else Canceled.
-	//IsAttacking = false;
+	MyCombatComponent->DoAttack();
 }
-*/
 
 
 void AAPPlayerCharacter::IC_Throw_Triggered(const FInputActionValue& Value)

@@ -7,7 +7,9 @@
 #include "Components/BoxComponent.h"
 #include "Sound/SoundCue.h"
 #include "PaperZDCharacter.h"
+#include "PaperFlipbookComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/APPlayerCharacter.h"
 
 UAPCombatComponent::UAPCombatComponent()
 {
@@ -60,6 +62,15 @@ void UAPCombatComponent::BeginPlay()
 	if (const APaperZDCharacter* MyOwnerZD = Cast<APaperZDCharacter>(MyOwner))
 	{
 		AnimInstancePtr = MyOwnerZD->GetAnimInstance();	
+	}
+
+	// Save off relative location for shaking animation
+	if (const APaperZDCharacter* Owner = Cast<APaperZDCharacter>(GetOwner()))
+	{
+		if (const UPaperFlipbookComponent* Sprite = Owner->GetSprite())
+		{
+			SpriteDefaultRelativeLocation = Sprite->GetRelativeLocation();
+		}
 	}
 }
 
@@ -165,6 +176,14 @@ void UAPCombatComponent::BeginHitStun()
 			false);
 		
 		IsStunned = true;
+
+		// Begin Stun Animation Timer
+		World->GetTimerManager().SetTimer(
+			StunAnimationTimerHandle,
+			this,
+			&UAPCombatComponent::StunAnimation,
+			StunAnimationLoop,
+			true);
 	}
 	
 	if (UPaperZDAnimInstance* AnimInstance = AnimInstancePtr.Get())
@@ -175,7 +194,35 @@ void UAPCombatComponent::BeginHitStun()
 
 void UAPCombatComponent::EndHitStun()
 {
+	if (const UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(StunAnimationTimerHandle);
+	}
+	// Reset default sprite relative location after animation.
+	if (const APaperZDCharacter* Owner = Cast<APaperZDCharacter>(GetOwner()))
+	{
+		if (UPaperFlipbookComponent* Sprite = Owner->GetSprite())
+		{
+			Sprite->SetRelativeLocation(SpriteDefaultRelativeLocation);			
+		}
+	}
+	
 	IsStunned = false;
+}
+
+void UAPCombatComponent::StunAnimation()
+{
+	// TODO Should this just live on the owner and respond to a broadcast from being hit? Prob.
+	if (const APaperZDCharacter* Owner = Cast<APaperZDCharacter>(GetOwner()))
+	{
+		if (UPaperFlipbookComponent* Sprite = Owner->GetSprite())
+		{
+			StunAnimation_flipflop = !StunAnimation_flipflop;
+			const float x_offset = StunAnimation_flipflop ? StunAnimationTranslation : StunAnimationTranslation * -1.0; 
+			const FVector NewRelLocation = SpriteDefaultRelativeLocation + FVector(x_offset, 0, 0);
+			Sprite->SetRelativeLocation(NewRelLocation);			
+		}
+	}
 }
 
 void UAPCombatComponent::PlayHitStunSound() const

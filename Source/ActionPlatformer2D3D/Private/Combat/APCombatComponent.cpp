@@ -8,6 +8,7 @@
 #include "Sound/SoundCue.h"
 #include "PaperZDCharacter.h"
 #include "PaperFlipbookComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/APPlayerCharacter.h"
 
@@ -113,6 +114,15 @@ void UAPCombatComponent::TakeDamage(uint8 InDamage)
 		{
 			AnimInstance->JumpToNode(ABPJumpName_Dead);
 		}
+
+		// TODO This should prob be handled by the character?
+		if (const APaperZDCharacter* MyOwner = Cast<APaperZDCharacter>(GetOwner()))
+		{
+			if (UCapsuleComponent* Capsule = MyOwner->GetCapsuleComponent())
+			{
+				Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			}
+		}
 	}
 	else
 	{
@@ -176,6 +186,7 @@ void UAPCombatComponent::BeginHitStun()
 			false);
 		
 		IsStunned = true;
+		OnStunStatusChanged.Broadcast(IsStunned);
 
 		// Begin Stun Animation Timer
 		World->GetTimerManager().SetTimer(
@@ -208,6 +219,7 @@ void UAPCombatComponent::EndHitStun()
 	}
 	
 	IsStunned = false;
+	OnStunStatusChanged.Broadcast(IsStunned);
 }
 
 void UAPCombatComponent::StunAnimation()

@@ -28,6 +28,7 @@ public:
 	UAPCombatComponent();
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCombatActorDefeated);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStunStatusChanged, bool, IsStunned);
 
 protected:
 	// Called when the game starts
@@ -37,6 +38,9 @@ protected:
 public:	
 	UPROPERTY(BlueprintAssignable)
 	FOnCombatActorDefeated OnCombatActorDefeated;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnStunStatusChanged OnStunStatusChanged;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Combat|Attack")
 	uint8 AttackDamage = 30;

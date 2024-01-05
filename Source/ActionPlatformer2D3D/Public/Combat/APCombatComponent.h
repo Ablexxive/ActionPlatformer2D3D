@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "APCombatComponent.generated.h"
 
+
 UENUM(BlueprintType)
 enum class EFaction : uint8
 {
@@ -15,6 +16,7 @@ enum class EFaction : uint8
 };
 
 class UBoxComponent;
+class USoundCue;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONPLATFORMER2D3D_API UAPCombatComponent : public UActorComponent
@@ -24,6 +26,8 @@ class ACTIONPLATFORMER2D3D_API UAPCombatComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UAPCombatComponent();
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCombatActorDefeated);
 
 protected:
 	// Called when the game starts
@@ -31,9 +35,8 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
-	// TODO - can probably remove the tick stuff
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UPROPERTY(BlueprintAssignable)
+	FOnCombatActorDefeated OnCombatActorDefeated;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Combat|Attack")
 	uint8 AttackDamage = 30;
@@ -54,16 +57,22 @@ public:
 	bool IsStunned = false;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat|Character|Runtime")
+	bool IsHitPaused = false;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat|Character|Runtime")
 	bool IsDead = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Animation")
-	FName ABPJumpName_HitReact;
+	FName ABPJumpName_HitStun;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Animation")
 	FName ABPJumpName_Dead;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Character")
 	float StunDuration = 0.5;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Character")
+	float HitPauseDuration = 0.2;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat|Attack")
 	uint8 FoundAttackHitBox = 0;
@@ -79,6 +88,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Combat|Character")
 	EFaction MyFaction = EFaction::Player;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Combat|Character")
+	USoundCue* HitStunSoundCue;
+
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ToggleAttackHitbox(bool Enabled);
@@ -103,6 +116,14 @@ private:
 		bool bFromSweep,
 		const FHitResult& SweepResult);
 
-	UFUNCTION()
-	void _StunTimerComplete();
+	void BeginHitStun();
+	
+	void EndHitStun();
+	
+	void PlayHitStunSound() const;
+	
+	void BeginHitPause();
+	
+	void EndHitPause();
+
 };

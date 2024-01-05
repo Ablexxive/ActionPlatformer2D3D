@@ -5,7 +5,9 @@
 
 #include "Combat/APCombatInterface.h"
 #include "Components/BoxComponent.h"
+#include "Sound/SoundCue.h"
 #include "PaperZDCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 UAPCombatComponent::UAPCombatComponent()
 {
@@ -88,26 +90,23 @@ void UAPCombatComponent::TakeDamage(uint8 InDamage)
 {
 	CurrentHealth -= InDamage;
 	CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
-	UPaperZDAnimInstance* AnimInstance = AnimInstancePtr.Get();
-	if (AnimInstance == nullptr)
-	{
-		// TODO Logging
-		return;
-	}
-	
+
+	PlayHitStunSound();
+
 	if (CurrentHealth <= 0)
 	{
-		// TODO Check 0, broadcast playing dying?
-		AnimInstance->JumpToNode(ABPJumpName_Dead);
+		OnCombatActorDefeated.Broadcast();
 		IsDead = true;
+		
+		if (UPaperZDAnimInstance* AnimInstance = AnimInstancePtr.Get())
+		{
+			AnimInstance->JumpToNode(ABPJumpName_Dead);
+		}
 	}
 	else
 	{
-	   FTimerHandle StunTimerHandle; // TODO Maybe keep this ref in .h?
-	   GetWorld()->GetTimerManager().SetTimer(StunTimerHandle, this, &UAPCombatComponent::_StunTimerComplete, StunDuration, false);
-	
-		AnimInstance->JumpToNode(ABPJumpName_HitReact);
-		IsStunned = true;
+		BeginHitStun();
+		BeginHitPause();
 	}
 }
 
@@ -146,17 +145,82 @@ void UAPCombatComponent::BeginAttackHitboxOverlap(
 			{
 				// Do damage to the other combat component.
 				OtherCombatComponent->TakeDamage(AttackDamage);
+
+				BeginHitPause();
 			}
 		}
 	}
 }
 
-void UAPCombatComponent::_StunTimerComplete()
+void UAPCombatComponent::BeginHitStun()
+{
+	if (const UWorld* World = GetWorld())
+	{
+		FTimerHandle StunTimerHandle; // TODO Maybe keep this ref in .h?
+		World->GetTimerManager().SetTimer(
+			StunTimerHandle,
+			this,
+			&UAPCombatComponent::EndHitStun,
+			StunDuration,
+			false);
+		
+		IsStunned = true;
+	}
+	
+	if (UPaperZDAnimInstance* AnimInstance = AnimInstancePtr.Get())
+	{
+		AnimInstance->JumpToNode(ABPJumpName_HitStun);
+	}
+}
+
+void UAPCombatComponent::EndHitStun()
 {
 	IsStunned = false;
 }
 
-void UAPCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UAPCombatComponent::PlayHitStunSound() const
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (HitStunSoundCue)
+	{
+		if (const UWorld* World = GetWorld())
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				World,
+				HitStunSoundCue,
+				GetOwner()->GetActorLocation(),
+				GetOwner()->GetActorRotation()
+			);	
+		}
+	}
+}
+
+
+void UAPCombatComponent::BeginHitPause()
+{
+	if (AActor* Owner = GetOwner())
+	{
+		Owner->CustomTimeDilation = 0.0;
+	}
+	
+	if (const UWorld* World = GetWorld())
+	{
+		FTimerHandle HitPauseTimerHandle; // TODO Maybe keep this ref in .h?
+		World->GetTimerManager().SetTimer(
+			HitPauseTimerHandle,
+			this,
+			&UAPCombatComponent::EndHitPause,
+			HitPauseDuration,
+			false);
+	}
+	
+	IsHitPaused = true;
+}
+
+void UAPCombatComponent::EndHitPause()
+{
+	if (AActor* Owner = GetOwner())
+	{
+		Owner->CustomTimeDilation = 1.0;
+	}
+	IsHitPaused = false;
 }

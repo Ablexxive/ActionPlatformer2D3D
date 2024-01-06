@@ -23,15 +23,4 @@ public:
 	// You need to add UPROPERTY for TObjectPtrs so that the thing is known to unreal GC
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<UAPCombatComponent> CombatComponent;
-	
-	/*
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsAttacking = false;
-	UFUNCTION()
-	virtual EFaction GetFaction_Implementation() const override { return MyFaction; }
-
-protected:
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	EFaction MyFaction = EFaction::Player;
-	*/
 };

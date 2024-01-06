@@ -68,9 +68,9 @@ void UAPCombatComponent::BeginPlay()
 	// Save off relative location for shaking animation
 	if (const APaperZDCharacter* Owner = Cast<APaperZDCharacter>(GetOwner()))
 	{
-		if (const UPaperFlipbookComponent* Sprite = Owner->GetSprite())
+		if (const UPaperFlipbookComponent* MySprite = Owner->GetSprite())
 		{
-			SpriteDefaultRelativeLocation = Sprite->GetRelativeLocation();
+			SpriteDefaultRelativeLocation = MySprite->GetRelativeLocation();
 		}
 	}
 }
@@ -212,9 +212,9 @@ void UAPCombatComponent::EndHitStun()
 	// Reset default sprite relative location after animation.
 	if (const APaperZDCharacter* Owner = Cast<APaperZDCharacter>(GetOwner()))
 	{
-		if (UPaperFlipbookComponent* Sprite = Owner->GetSprite())
+		if (UPaperFlipbookComponent* MySprite = Owner->GetSprite())
 		{
-			Sprite->SetRelativeLocation(SpriteDefaultRelativeLocation);			
+			MySprite->SetRelativeLocation(SpriteDefaultRelativeLocation);			
 		}
 	}
 	
@@ -227,12 +227,12 @@ void UAPCombatComponent::StunAnimation()
 	// TODO Should this just live on the owner and respond to a broadcast from being hit? Prob.
 	if (const APaperZDCharacter* Owner = Cast<APaperZDCharacter>(GetOwner()))
 	{
-		if (UPaperFlipbookComponent* Sprite = Owner->GetSprite())
+		if (UPaperFlipbookComponent* MySprite = Owner->GetSprite())
 		{
 			StunAnimation_flipflop = !StunAnimation_flipflop;
 			const float x_offset = StunAnimation_flipflop ? StunAnimationTranslation : StunAnimationTranslation * -1.0; 
 			const FVector NewRelLocation = SpriteDefaultRelativeLocation + FVector(x_offset, 0, 0);
-			Sprite->SetRelativeLocation(NewRelLocation);			
+			MySprite->SetRelativeLocation(NewRelLocation);			
 		}
 	}
 }

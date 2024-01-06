@@ -102,12 +102,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Combat|Character")
 	USoundCue* HitStunSoundCue;
 
-
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ToggleAttackHitbox(bool Enabled);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TakeDamage(uint8 InDamage);
+
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	bool CanAct() const;
 	
 private:
 	TWeakObjectPtr<UBoxComponent> AttackHitBoxPtr;

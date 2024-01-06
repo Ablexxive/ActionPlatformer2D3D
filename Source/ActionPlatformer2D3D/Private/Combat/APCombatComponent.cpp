@@ -10,7 +10,6 @@
 #include "PaperFlipbookComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/APPlayerCharacter.h"
 
 UAPCombatComponent::UAPCombatComponent()
 {
@@ -21,6 +20,8 @@ UAPCombatComponent::UAPCombatComponent()
 void UAPCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CurrentHealth = MaxHealth;
 	
 	// Find the attack hit box - UBoxComponent
 	const AActor* MyOwner = GetOwner();
@@ -129,6 +130,11 @@ void UAPCombatComponent::TakeDamage(uint8 InDamage)
 		BeginHitStun();
 		BeginHitPause();
 	}
+}
+
+bool UAPCombatComponent::CanAct() const
+{
+	return !IsStunned && !IsAttacking && !IsDead;
 }
 
 void UAPCombatComponent::DoAttack()

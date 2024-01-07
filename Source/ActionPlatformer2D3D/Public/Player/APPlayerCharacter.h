@@ -27,19 +27,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> Camera;
 
-	// TODO MOVING!! Delete after this data lives in the combat component.
-	// TODO Move attack things to an attack component? Can move IsAttacking there too.
-	/*
-	 FZDOnAnimationOverrideEndSignature AttackAnimationOverideDelegate;
-	void AttackAnimationComplete(bool Success);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	UPaperZDAnimSequence* AttackAnimSequence;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	FName AttackAnimSequenceSlot;
-	*/
-
 #pragma region // input
 private:
 	/* Maps key inputs to input actions defined in InputConfig */

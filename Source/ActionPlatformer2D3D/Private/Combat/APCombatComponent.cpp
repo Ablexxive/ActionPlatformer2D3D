@@ -155,6 +155,7 @@ void UAPCombatComponent::AttackAnimationComplete(bool Success)
 {
 	// If (success) -> Completed, else Canceled.
 	IsAttacking = false;
+	OnAttackEndSignature.ExecuteIfBound(Success);
 }
 
 void UAPCombatComponent::BeginAttackHitboxOverlap(

@@ -18,6 +18,8 @@ enum class EFaction : uint8
 class UBoxComponent;
 class USoundCue;
 
+DECLARE_DELEGATE_OneParam(FAPOnAttackEndSignature, bool /* bCompleted */);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONPLATFORMER2D3D_API UAPCombatComponent : public UActorComponent
 {
@@ -41,6 +43,9 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnStunStatusChanged OnStunStatusChanged;
+
+	//UPROPERTY(BlueprintAssignable)
+	FAPOnAttackEndSignature OnAttackEndSignature;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Combat|Attack")
 	uint8 AttackDamage = 30;

@@ -139,7 +139,7 @@ bool UAPCombatComponent::CanAct() const
 
 void UAPCombatComponent::DoAttack()
 {
-	if (IsAttacking)
+	if (!CanAct())
 	{
 		return;
 	}

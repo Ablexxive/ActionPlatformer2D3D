@@ -10,6 +10,7 @@
 #include "PaperFlipbookComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/APPlayerCharacter.h"
 
 UAPCombatComponent::UAPCombatComponent()
 {
@@ -105,6 +106,12 @@ void UAPCombatComponent::TakeDamage(uint8 InDamage)
 	CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
 
 	PlayHitStunSound();
+
+	// Interrupt any existing attack overrides to cancel our outgoing attacks
+	if (UPaperZDAnimInstance* MyAnimInstance = AnimInstancePtr.Get())
+	{
+		MyAnimInstance->StopAllAnimationOverrides();
+	}
 
 	if (CurrentHealth <= 0)
 	{

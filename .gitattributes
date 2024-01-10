@@ -4,3 +4,6 @@
 
 Content/Assets/** filter=lfs diff=lfs merge=lfs -text
 AssetsSource/** filter=lfs diff=lfs merge=lfs -text
+Content/Stylized_Egypt/Materials/** filter=lfs diff=lfs merge=lfs -text
+Content/Stylized_Egypt/Meshes/** filter=lfs diff=lfs merge=lfs -text
+Content/Stylized_Egypt/Textures/** filter=lfs diff=lfs merge=lfs -text

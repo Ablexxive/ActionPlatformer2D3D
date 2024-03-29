@@ -20,7 +20,7 @@ class USoundCue;
 
 DECLARE_DELEGATE_OneParam(FAPOnAttackEndSignature, bool /* bCompleted */);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONPLATFORMER2D3D_API UAPCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
